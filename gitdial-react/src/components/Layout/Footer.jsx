@@ -22,7 +22,7 @@ const FooterSection = ({ title, links }) => (
 
 const Footer = () => {
     return (
-        <footer className="bg-dark text-slate-400 pt-20 pb-10 border-t border-slate-800">
+        <footer className="bg-dark text-slate-400 pt-6 pb-4 border-t border-slate-800">
             <div className="container mx-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
                     <div className="lg:col-span-2 space-y-6">

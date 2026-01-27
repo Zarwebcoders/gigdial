@@ -9,7 +9,7 @@ const MainLayout = () => {
         <div className="min-h-screen flex flex-col font-sans bg-light-bg text-dark">
             <TopBar />
             <Header />
-            <main className="flex-grow pt-[80px]"> {/* Offset for fixed header */}
+            <main className="flex-grow"> {/* Offset for fixed header */}
                 <Outlet />
             </main>
             <Footer />

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, Calendar, FileText, Settings, User, LogOut,
-    Menu, X, Bell, Search, ChevronDown
+    Menu, X, Bell, Search, ChevronDown, Repeat, MessageSquare, Heart, CreditCard, MapPin, Gift, Award
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -30,7 +30,15 @@ const DashboardLayout = ({ children, role = 'worker' }) => {
 
     const customerLinks = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/customer-dashboard' },
-        { icon: Calendar, label: 'My Requests', path: '/customer-dashboard/requests' },
+        { icon: Search, label: 'Browse Services', path: '/customer-dashboard/services' },
+        { icon: Calendar, label: 'Service History', path: '/customer-dashboard/history' },
+        { icon: Repeat, label: 'My Subscriptions', path: '/customer-dashboard/subscriptions' },
+        { icon: MessageSquare, label: 'Messages', path: '/customer-dashboard/messages' },
+        { icon: Heart, label: 'Favorites', path: '/customer-dashboard/favorites' },
+        { icon: CreditCard, label: 'Wallet', path: '/customer-dashboard/wallet' },
+        { icon: MapPin, label: 'Saved Addresses', path: '/customer-dashboard/addresses' },
+        { icon: Gift, label: 'Refer & Earn', path: '/customer-dashboard/referral' },
+        { icon: Award, label: 'Loyalty Points', path: '/customer-dashboard/loyalty' },
         { icon: User, label: 'Profile', path: '/customer-dashboard/profile' },
         { icon: Settings, label: 'Settings', path: '/customer-dashboard/settings' },
     ];
