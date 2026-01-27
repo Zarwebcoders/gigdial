@@ -1,27 +1,117 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-    DollarSign, User, Calendar, TrendingUp, TrendingDown,
-    MoreHorizontal, CheckCircle, Clock, AlertCircle
+    DollarSign, User, TrendingUp, TrendingDown,
+    CheckCircle, Clock, MapPin, Phone, X, Briefcase, Info,
+    Star, ArrowRight
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const StatCard = ({ title, value, change, isPositive, icon: Icon, color }) => (
-    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-card-hover transition-all duration-300">
-        <div className="flex justify-between items-start mb-4">
-            <div className={`w-12 h-12 rounded-2xl ${color} bg-opacity-10 flex items-center justify-center text-${color.replace('bg-', '')}-600`}>
-                <Icon size={24} />
+const StatCard = ({ title, value, change, isPositive, icon: Icon, color, index }) => (
+    <div className="relative overflow-hidden bg-white p-6 rounded-2xl border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 group">
+        <div className={`absolute top-0 right-0 w-32 h-32 bg-${color.replace('bg-', '')}-50 rounded-full blur-3xl -mr-16 -mt-16 opacity-50 group-hover:opacity-100 transition-opacity duration-500`}></div>
+
+        <div className="relative">
+            <div className="flex justify-between items-start mb-4">
+                <div className={`w-12 h-12 rounded-xl ${color} bg-opacity-10 backdrop-blur-sm flex items-center justify-center text-${color.replace('bg-', '')}-600 group-hover:scale-110 transition-transform duration-300 shadow-sm`}>
+                    <Icon size={24} />
+                </div>
+                {change && (
+                    <span className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border ${isPositive ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                        {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                        {change}
+                    </span>
+                )}
             </div>
-            <span className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg ${isPositive ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                {change}
-            </span>
+            <h3 className="text-3xl font-display font-bold text-slate-800 mb-1 tracking-tight">{value}</h3>
+            <p className="text-slate-500 font-medium text-sm">{title}</p>
         </div>
-        <h3 className="text-3xl font-display font-bold text-dark-surface mb-1">{value}</h3>
-        <p className="text-slate-500 font-medium text-sm">{title}</p>
+    </div>
+);
+
+const LeadCard = ({ lead }) => (
+    <div className="group bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-[0_8px_30px_-6px_rgba(0,0,0,0.1)] transition-all duration-300 animate-slide-up relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-slate-200 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+        <div className="flex flex-col md:flex-row justify-between gap-6">
+            <div className="flex-1">
+                <div className="flex justify-between items-start mb-3">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                            <Briefcase size={22} strokeWidth={2.5} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-lg text-slate-800 leading-tight group-hover:text-primary transition-colors">{lead.service}</h3>
+                            <div className="flex mt-1 gap-2">
+                                {lead.isUrgent && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-600 border border-red-100 uppercase tracking-wide">
+                                        Urgent
+                                    </span>
+                                )}
+                                {lead.isNew && !lead.isUrgent && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100 uppercase tracking-wide">
+                                        New
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <span className="block text-lg font-bold text-slate-900">{lead.budget}</span>
+                        <span className="text-xs text-slate-400 font-medium">Est. Budget</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-slate-50/50 rounded-xl border border-slate-100/50">
+                    <div className="space-y-2">
+                        <div className="flex items-start gap-2.5">
+                            <User size={16} className="text-slate-400 mt-0.5" />
+                            <div>
+                                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Customer</p>
+                                <p className="text-sm font-semibold text-slate-700">{lead.customer}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-2.5">
+                            <Clock size={16} className="text-slate-400 mt-0.5" />
+                            <div>
+                                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Posted</p>
+                                <p className="text-sm font-semibold text-slate-700">{lead.time}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex items-start gap-2.5">
+                            <MapPin size={16} className="text-slate-400 mt-0.5" />
+                            <div>
+                                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Location</p>
+                                <p className="text-sm font-semibold text-slate-700">{lead.location}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-gradient-to-r from-secondary to-green-600 hover:to-green-700 text-white px-8 py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-green-200 active:scale-95 hover:-translate-y-0.5">
+                        <Phone size={18} />
+                        Accept & Call
+                    </button>
+                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-white border-2 border-slate-100 hover:border-slate-300 text-slate-700 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:bg-slate-50">
+                        <Info size={18} />
+                        Details
+                    </button>
+                    <button className="flex-none p-3 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100" title="Decline">
+                        <X size={20} />
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 );
 
 const Overview = () => {
+    const navigate = useNavigate();
+
     const revenueData = [
         { name: 'Mon', revenue: 4000 },
         { name: 'Tue', revenue: 3000 },
@@ -32,127 +122,127 @@ const Overview = () => {
         { name: 'Sun', revenue: 3490 },
     ];
 
-    const recentBookings = [
-        { id: 1, client: 'Amit Singh', service: 'Plumbing Repair', date: 'Today, 10:00 AM', status: 'Pending', price: '₹450' },
-        { id: 2, client: 'Sarah Khan', service: 'House Cleaning', date: 'Yesterday', status: 'Completed', price: '₹1200' },
-        { id: 3, client: 'Rajesh Kumar', service: 'AC Service', date: '22 Jan', status: 'Cancelled', price: '₹800' },
+    const newLeads = [
+        {
+            id: 1,
+            service: 'Kitchen Sink Repair',
+            customer: 'Priya Mehta',
+            location: 'Satellite, Ahmedabad',
+            time: '2 hours ago',
+            budget: '₹500-800',
+            isUrgent: true,
+            isNew: false
+        },
+        {
+            id: 2,
+            service: 'Bathroom Plumbing',
+            customer: 'Amit Sharma',
+            location: 'Vastrapur, Ahmedabad',
+            time: '5 hours ago',
+            budget: 'Negotiable',
+            isUrgent: false,
+            isNew: true
+        }
     ];
 
     return (
-        <div className="space-y-8 animate-fade-in">
+        <div className="space-y-10 animate-fade-in max-w-7xl mx-auto pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-display font-bold text-dark-surface">Dashboard Overview</h1>
-                    <p className="text-slate-500">Welcome back, Rahul! You have 3 new requests.</p>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 bg-gradient-to-r from-blue-900 to-blue-800 p-8 rounded-3xl text-white shadow-xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-2">
+                        <span className="bg-white/20 backdrop-blur-md text-white/90 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-white/10">
+                            Dashboard
+                        </span>
+                        <span className="flex items-center gap-1.5 text-green-300 text-xs font-bold">
+                            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                            Online
+                        </span>
+                    </div>
+                    <h1 className="text-4xl font-display font-bold mb-2">Welcome back, Rajesh!</h1>
+                    <p className="text-blue-100 text-lg opacity-90 max-w-md">You have <strong className="text-white">2 new leads</strong> waiting for your response today.</p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <select className="bg-white border border-slate-200 text-slate-600 text-sm font-semibold py-2 px-4 rounded-xl focus:outline-none shadow-sm cursor-pointer">
-                        <option>Last 7 Days</option>
-                        <option>Last 30 Days</option>
-                        <option>This Year</option>
-                    </select>
-                    <button className="btn-primary py-2 px-4 text-sm shadow-md">Export Report</button>
+
+                <div className="relative z-10 flex items-center gap-4">
+                    <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 min-w-[140px]">
+                        <p className="text-blue-200 text-xs font-semibold uppercase tracking-wider mb-1">Total Earnings</p>
+                        <p className="text-2xl font-bold">₹35,240</p>
+                    </div>
                 </div>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard
-                    title="Total Revenue"
-                    value="₹45,231"
-                    change="+12.5%"
+                    title="New Leads Today"
+                    value="18"
+                    change="+15% from yesterday"
+                    isPositive={true}
+                    icon={Briefcase}
+                    color="bg-primary"
+                    index={0}
+                />
+                <StatCard
+                    title="Rating"
+                    value="4.8"
+                    change="120 reviews"
+                    isPositive={true}
+                    icon={Star}
+                    color="bg-orange-500"
+                    index={1}
+                />
+                <StatCard
+                    title="This Month's Earnings"
+                    value="₹35,240"
+                    change="+22% from last month"
                     isPositive={true}
                     icon={DollarSign}
-                    color="bg-green-500"
+                    color="bg-secondary"
+                    index={2}
                 />
                 <StatCard
-                    title="Active Bookings"
-                    value="24"
-                    change="+4"
+                    title="Total Jobs"
+                    value="156"
+                    change="+12 this month"
                     isPositive={true}
-                    icon={Calendar}
-                    color="bg-blue-500"
-                />
-                <StatCard
-                    title="Profile Views"
-                    value="1,203"
-                    change="-2.4%"
-                    isPositive={false}
-                    icon={User}
+                    icon={Clock}
                     color="bg-purple-500"
-                />
-                <StatCard
-                    title="Completion Rate"
-                    value="98%"
-                    change="+1.2%"
-                    isPositive={true}
-                    icon={CheckCircle}
-                    color="bg-orange-500"
+                    index={3}
                 />
             </div>
 
-            {/* Charts & Activity Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-lg text-dark-surface">Revenue Analytics</h3>
-                        <button className="text-primary text-sm font-semibold hover:underline">View Details</button>
+            <div className="flex flex-col gap-8">
+                {/* Leads Section */}
+                <div className="w-full space-y-6">
+                    <div className="flex justify-between items-center px-2">
+                        <h2 className="text-2xl font-display font-bold text-slate-800 flex items-center gap-3">
+                            New Leads
+                            <span className="bg-red-100 text-red-600 text-sm font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-inner">{newLeads.length}</span>
+                        </h2>
+                        <button
+                            onClick={() => navigate('leads')}
+                            className="group flex items-center gap-1 text-sm font-bold text-primary hover:text-blue-700 transition-colors"
+                        >
+                            View All Leads
+                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                        </button>
                     </div>
-                    <div className="h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData}>
-                                <defs>
-                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748B', fontSize: 12 }} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: '#1E293B', borderRadius: '8px', border: 'none', color: '#fff' }}
-                                    itemStyle={{ color: '#fff' }}
-                                />
-                                <Area type="monotone" dataKey="revenue" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
-                            </AreaChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
 
-                {/* Recent Bookings List */}
-                <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                    <h3 className="font-bold text-lg text-dark-surface mb-6">Recent Activity</h3>
-                    <div className="space-y-6">
-                        {recentBookings.map(booking => (
-                            <div key={booking.id} className="flex items-center gap-4 pb-4 border-b border-slate-50 last:border-0 last:pb-0">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs ${booking.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                                        booking.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
-                                            'bg-red-100 text-red-700'
-                                    }`}>
-                                    {booking.client.charAt(0)}
-                                </div>
-                                <div className="flex-1">
-                                    <h4 className="font-semibold text-sm text-dark-surface">{booking.client}</h4>
-                                    <p className="text-xs text-slate-500">{booking.service}</p>
-                                </div>
-                                <div className="text-right">
-                                    <div className="font-bold text-sm text-dark-surface">{booking.price}</div>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${booking.status === 'Completed' ? 'bg-green-50 text-green-600' :
-                                            booking.status === 'Pending' ? 'bg-orange-50 text-orange-600' :
-                                                'bg-red-50 text-red-600'
-                                        }`}>
-                                        {booking.status}
-                                    </span>
-                                </div>
-                            </div>
+                    <div className="space-y-5">
+                        {newLeads.map(lead => (
+                            <LeadCard key={lead.id} lead={lead} />
                         ))}
+
+                        {newLeads.length === 0 && (
+                            <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
+                                <Briefcase size={48} className="mx-auto text-slate-200 mb-3" />
+                                <h3 className="text-lg font-bold text-slate-600">No new leads right now</h3>
+                                <p className="text-slate-400">Check back later for new opportunities</p>
+                            </div>
+                        )}
                     </div>
-                    <button className="w-full mt-6 py-3 rounded-xl border border-slate-100 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
-                        View All Bookings
-                    </button>
                 </div>
             </div>
         </div>

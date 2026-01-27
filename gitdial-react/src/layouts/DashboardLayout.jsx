@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, Calendar, FileText, Settings, User, LogOut,
-    Menu, X, Bell, Search, ChevronDown, Repeat, MessageSquare, Heart, CreditCard, MapPin, Gift, Award
+    Menu, X, Bell, Search, ChevronDown, Repeat, MessageSquare, Heart, CreditCard, MapPin, Gift, Award, Briefcase, Wrench
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,6 +22,9 @@ const DashboardLayout = ({ children, role = 'worker' }) => {
 
     const workerLinks = [
         { icon: LayoutDashboard, label: 'Overview', path: '/worker-dashboard' },
+        { icon: Briefcase, label: 'Job Requests', path: '/worker-dashboard/leads' },
+        { icon: Wrench, label: 'My Services', path: '/worker-dashboard/services' },
+        { icon: MessageSquare, label: 'Messages', path: '/worker-dashboard/messages' },
         { icon: Calendar, label: 'My Bookings', path: '/worker-dashboard/bookings' },
         { icon: FileText, label: 'Earnings', path: '/worker-dashboard/earnings' },
         { icon: User, label: 'Profile', path: '/worker-dashboard/profile' },
