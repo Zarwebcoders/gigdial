@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard, Calendar, FileText, Settings, User, LogOut,
-    Menu, X, Bell, Search, ChevronDown, Repeat, MessageSquare, Heart, CreditCard, MapPin, Gift, Award, Briefcase, Wrench,
-    Users, CheckCircle, DollarSign, AlertCircle, CheckSquare, Image, Scale, Shield
+    Menu, X, Bell, Search, ChevronDown, Repeat, MessageSquare, Heart, CreditCard, MapPin, Gift, Award, Briefcase, Wrench
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -47,20 +46,7 @@ const DashboardLayout = ({ children, role = 'worker' }) => {
         { icon: Settings, label: 'Settings', path: '/customer-dashboard/settings' },
     ];
 
-    const adminLinks = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
-        { icon: Users, label: 'Users', path: '/admin/users' },
-        { icon: CheckSquare, label: 'Service Approvals', path: '/admin/service-approvals' },
-        { icon: Image, label: 'Portfolio Approvals', path: '/admin/portfolio-approvals' },
-        { icon: Scale, label: 'Disputes', path: '/admin/disputes' },
-        { icon: Shield, label: 'Moderation', path: '/admin/moderation' },
-        { icon: Settings, label: 'Settings', path: '/admin/settings' },
-    ];
-
-    let links;
-    if (role === 'worker') links = workerLinks;
-    else if (role === 'admin') links = adminLinks;
-    else links = customerLinks;
+    const links = role === 'worker' ? workerLinks : customerLinks;
 
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex font-sans">

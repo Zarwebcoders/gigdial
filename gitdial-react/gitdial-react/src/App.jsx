@@ -11,7 +11,6 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import WorkerDashboard from './pages/Dashboard/WorkerDashboard';
 import CustomerDashboard from './pages/Dashboard/CustomerDashboard';
-import AdminPanel from './pages/Admin/AdminPanel';
 import ServiceCatalog from './pages/Services/ServiceCatalog';
 import ServiceDetail from './pages/Services/ServiceDetail';
 import Contact from './pages/Contact';
@@ -41,7 +40,6 @@ function AnimatedRoutes() {
         {/* Dashboard Routes (Custom Layout) */}
         <Route path="/worker-dashboard/*" element={<WorkerDashboard />} />
         <Route path="/customer-dashboard/*" element={<CustomerDashboard />} />
-        <Route path="/admin/*" element={<AdminPanel />} />
       </Routes>
     </AnimatePresence>
   );

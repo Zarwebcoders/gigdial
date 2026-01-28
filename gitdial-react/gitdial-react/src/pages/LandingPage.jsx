@@ -4,10 +4,6 @@ import Stats from '../components/LandingPage/Stats';
 import Categories from '../components/LandingPage/Categories';
 import ServiceShowcase from '../components/LandingPage/ServiceShowcase';
 import Features from '../components/LandingPage/Features';
-import HowItWorks from '../components/LandingPage/HowItWorks';
-import Pricing from '../components/LandingPage/Pricing';
-import LiveDemoSection from '../components/LandingPage/LiveDemoSection';
-import AppShowcase from '../components/LandingPage/AppShowcase';
 import { motion } from 'framer-motion';
 
 // Page transition variants
@@ -32,9 +28,6 @@ const LandingPage = () => {
             {/* Stats Bar - Overlapping the Hero bottom */}
             <Stats />
 
-            {/* Live Demo Section - New Addition */}
-            <LiveDemoSection />
-
             {/* Main Service Categories */}
             <div id="categories">
                 <Categories />
@@ -45,19 +38,10 @@ const LandingPage = () => {
                 <Features />
             </div>
 
-            {/* App Showcase - New Addition */}
-            <AppShowcase />
-
             {/* Detailed Service Showcase */}
             <div id="services">
                 <ServiceShowcase />
             </div>
-
-            {/* How It Works Section */}
-            <HowItWorks />
-
-            {/* Pricing Section */}
-            <Pricing />
 
         </motion.div>
     );
