@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Phone, Users, ShieldCheck, BarChart3, MessageSquare, Bell } from 'lucide-react';
+import { Phone, Users, ShieldCheck, BarChart3, MessageSquare, Bell, Star, CheckCircle2, Zap, Sparkles } from 'lucide-react';
 
 const features = [
     {
@@ -8,182 +8,231 @@ const features = [
         icon: Users,
         title: "Verified Worker Pool",
         description: "Access thousands of verified skilled workers ready for instant hiring.",
-        color: "blue"
+        accent: "blue",
+        gradient: "from-blue-600 to-indigo-600"
     },
     {
         id: 'campaigns',
         icon: MessageSquare,
         title: "Instant Communication",
         description: "Chat directly with workers or broadcast your requirements efficiently.",
-        color: "green"
+        accent: "emerald",
+        gradient: "from-emerald-500 to-teal-500"
     },
     {
         id: 'secure',
         icon: ShieldCheck,
-        title: "Secure Payments",
-        description: "Escrow-protected payments ensure satisfaction for both parties.",
-        color: "indigo"
+        title: "0% Commission Payments",
+        description: "Secure, transparent payments where workers keep 100% of their earnings.",
+        accent: "indigo",
+        gradient: "from-rose-500 to-pink-500"
     },
     {
         id: 'tracking',
         icon: BarChart3,
         title: "Real-time Tracking",
         description: "Monitor work progress and worker location in real-time.",
-        color: "purple"
+        accent: "lime",
+        gradient: "from-amber-400 to-orange-500"
     },
     {
         id: 'support',
         icon: Phone,
-        title: "24/7 Support",
-        description: "Dedicated support team to help resolve any disputes instantly.",
-        color: "orange"
+        title: "24/7 Premium Support",
+        description: "Our dedicated support team is here to help resolve any disputes instantly.",
+        accent: "orange",
+        gradient: "from-indigo-600 to-purple-500"
     },
     {
         id: 'alerts',
         icon: Bell,
         title: "Smart Alerts",
-        description: "Get notified immediately when a worker accepts your gig.",
-        color: "pink"
+        description: "Get notified immediately when a worker accepts your gig request.",
+        accent: "cyan",
+        gradient: "from-violet-500 to-fuchsia-500"
     }
 ];
+
+const FeatureItem = ({ feature, isActive, onClick, index }) => (
+    <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.1 }}
+        onClick={onClick}
+        className="relative group cursor-pointer"
+    >
+        {/* Shimmer Border Effect */}
+        <div className={`absolute -inset-0.5 bg-gradient-to-r ${feature.gradient} rounded-3xl blur opacity-20 transition duration-500 ${isActive ? 'opacity-100' : 'group-hover:opacity-60'}`}></div>
+        
+        {/* Card Content */}
+        <div className={`relative p-6 rounded-[1.4rem] border transition-all duration-300 overflow-hidden h-full flex flex-col sm:flex-row gap-4 items-center sm:items-start ${isActive 
+            ? 'bg-white border-transparent shadow-2xl scale-[1.02] z-10' 
+            : 'bg-white/80 border-slate-100 group-hover:bg-white group-hover:border-transparent'}`}>
+            
+            {/* Background Glow */}
+            <div className={`absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-24 h-24 bg-gradient-to-br ${feature.gradient} opacity-0 ${isActive ? 'opacity-10' : 'group-hover:opacity-5'} blur-2xl transition-opacity`}></div>
+
+            {/* Icon Container */}
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-500 ${isActive ? `bg-gradient-to-br ${feature.gradient} text-white shadow-lg scale-110` : 'bg-slate-100 text-slate-500 group-hover:scale-110'}`}>
+                <feature.icon size={22} strokeWidth={2.5} />
+            </div>
+
+            <div className="text-center sm:text-left">
+                <h3 className={`text-base font-black mb-1 tracking-tight transition-colors ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
+                    {feature.title}
+                </h3>
+                <p className="text-slate-500 text-[11px] leading-relaxed font-bold line-clamp-2">
+                    {feature.description}
+                </p>
+            </div>
+
+            {/* Active Indicator Bar */}
+            <div className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r ${feature.gradient} transition-all duration-500 ${isActive ? 'w-full' : 'w-0 group-hover:w-1/2'}`}></div>
+        </div>
+    </motion.div>
+);
 
 const AppShowcase = () => {
     const [activeFeature, setActiveFeature] = useState(features[0].id);
 
+    // Auto-rotate active feature
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setActiveFeature(prev => {
+                const currentIndex = features.findIndex(f => f.id === prev);
+                const nextIndex = (currentIndex + 1) % features.length;
+                return features[nextIndex].id;
+            });
+        }, 5000); 
+        return () => clearInterval(interval);
+    }, []);
+
+    const activeFeatureData = features.find(f => f.id === activeFeature);
+
     return (
-        <section className="py-24 bg-slate-50 overflow-hidden">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="py-24 bg-[#FAFBFF] relative overflow-hidden">
+            {/* Premium Background Elements */}
+            <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-100/30 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 -z-10 animate-pulse"></div>
+            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-100/30 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3 -z-10"></div>
+
+            <div className="max-w-7xl mx-auto px-6">
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    className="text-center mb-20"
+                    className="text-center mb-24"
                 >
-                    <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 text-slate-800 text-[10px] font-black uppercase tracking-[0.2em] mb-8 shadow-sm"
+                    >
+                        <Sparkles size={14} className="text-blue-500" />
+                        Next-Gen Mobile Platform
+                    </motion.div>
+
+                    <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 tracking-tighter leading-[1.1]">
                         One Mobile App to Manage <br className="hidden md:block" />
-                        <span className="bg-gradient-to-r from-blue-600 to-lime-500 bg-clip-text text-transparent">All Your Requirements</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-500">All Your Requirements</span>
                     </h2>
-                    <p className="text-slate-600 text-lg max-w-2xl mx-auto">
+                    <p className="text-slate-500 text-lg md:text-xl max-w-2xl mx-auto font-bold italic leading-relaxed">
                         Powerful features packaged in a simple, intuitive mobile interface designed for speed and reliability.
                     </p>
                 </motion.div>
 
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    {/* Left Side - Feature Grid */}
-                    <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+                    {/* Left Side - Vibrant Feature Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 relative z-10 order-2 lg:order-1">
                         {features.map((feature, index) => (
-                            <motion.div
-                                key={feature.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ delay: index * 0.1 }}
+                            <FeatureItem 
+                                key={feature.id} 
+                                feature={feature} 
+                                isActive={activeFeature === feature.id} 
                                 onClick={() => setActiveFeature(feature.id)}
-                                className={`p-6 rounded-2xl cursor-pointer border transition-all duration-300 ${activeFeature === feature.id
-                                        ? 'bg-white border-blue-500 shadow-xl shadow-blue-500/10 scale-105 z-10'
-                                        : 'bg-white border-slate-100 hover:border-blue-200 hover:shadow-lg'
-                                    }`}
-                            >
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${activeFeature === feature.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
-                                    }`}>
-                                    <feature.icon size={24} />
-                                </div>
-                                <h3 className={`text-xl font-bold mb-2 ${activeFeature === feature.id ? 'text-slate-900' : 'text-slate-700'
-                                    }`}>
-                                    {feature.title}
-                                </h3>
-                                <p className="text-slate-500 text-sm leading-relaxed">
-                                    {feature.description}
-                                </p>
-                            </motion.div>
+                                index={index} 
+                            />
                         ))}
                     </div>
 
-                    {/* Right Side - Phone Mockup (Sticky/Interactive) */}
-                    <div className="relative flex justify-center lg:h-[800px] items-center">
-                        <motion.div
-                            className="relative w-[300px] h-[600px] bg-slate-900 rounded-[3rem] border-8 border-slate-900 shadow-2xl overflow-hidden"
-                            initial={{ rotate: -5 }}
-                            whileInView={{ rotate: 0 }}
-                            transition={{ type: "spring", stiffness: 50 }}
-                        >
-                            {/* Inner Bezel */}
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-900 rounded-b-xl z-20"></div>
+                    {/* Right Side - Phone Mockup */}
+                    <div className="relative flex justify-center lg:h-[800px] items-center order-1 lg:order-2">
+                        {/* Animated Glow behind Phone */}
+                        <div className="absolute w-[400px] h-[400px] md:w-[600px] md:h-[600px] rounded-full bg-gradient-to-tr from-blue-200/40 to-purple-200/40 blur-3xl -z-10 animate-pulse"></div>
 
-                            {/* Screen Content */}
-                            <div className="w-full h-full bg-white relative overflow-hidden flex flex-col">
-                                {/* Status Bar Mock */}
-                                <div className="h-8 bg-slate-900 w-full"></div>
+                        <div className="lg:sticky lg:top-32 transform scale-90 sm:scale-105 transition-transform">
+                            <motion.div
+                                className="relative w-[250px] h-[500px] sm:w-[280px] sm:h-[560px] bg-slate-900 rounded-[3rem] p-2 shadow-[0_40px_80px_-15px_rgba(30,58,138,0.25)] border-[6px] border-slate-800"
+                                initial={{ rotateY: -10, rotateX: 5 }}
+                                whileInView={{ rotateY: -5, rotateX: 0 }}
+                                transition={{ type: "spring", stiffness: 40, damping: 20 }}
+                            >
+                                {/* notch */}
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 h-5 w-24 bg-slate-950 rounded-b-xl z-30"></div>
 
-                                {/* App Header */}
-                                <div className="bg-blue-600 p-4 text-white pt-8 pb-6 rounded-b-[2rem] shadow-lg z-10">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 bg-white/20 rounded-full"></div>
-                                            <span className="font-bold">GigHome</span>
+                                {/* Screen Content Container */}
+                                <div className="w-full h-full bg-slate-50 rounded-[2.4rem] overflow-hidden relative flex flex-col">
+
+                                    {/* App Header */}
+                                    <div className={`relative pt-10 pb-6 px-5 bg-gradient-to-br ${activeFeatureData.gradient} text-white rounded-b-[2rem] shadow-xl z-20 overflow-hidden transition-all duration-700`}>
+                                        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                                        <div className="flex justify-between items-center mb-4 relative z-10">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-8 h-8 bg-white/20 backdrop-blur-md rounded-full border border-white/20 flex items-center justify-center">
+                                                    <Users size={14} className="text-white" />
+                                                </div>
+                                                <span className="font-bold text-base tracking-wide">GigHome</span>
+                                            </div>
+                                            <Bell size={18} className="opacity-80" />
                                         </div>
-                                        <Bell size={20} />
+                                        <div className="relative z-10">
+                                            <h4 className="text-xl font-black mb-0.5">Explore</h4>
+                                            <p className="text-white/80 font-bold text-[9px] uppercase tracking-widest flex items-center gap-1.5">
+                                                <Zap size={10} className="fill-yellow-400 text-yellow-400" />
+                                                {activeFeatureData.title}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="mt-4">
-                                        <h4 className="text-xl font-bold opacity-90">Hello, User</h4>
-                                        <p className="text-blue-100 text-sm">Find your next worker</p>
-                                    </div>
-                                </div>
 
-                                {/* Dynamic Content Area based on Active Feature */}
-                                <div className="flex-1 p-4 bg-slate-50 relative">
-                                    <AnimatePresence mode="wait">
-                                        <motion.div
-                                            key={activeFeature}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -20 }}
-                                            transition={{ duration: 0.3 }}
-                                            className="h-full flex flex-col gap-4"
-                                        >
-                                            {/* Mock Content Blocks */}
-                                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                                                <div className="flex items-center gap-3 mb-3">
-                                                    <div className={`p-2 rounded-lg bg-${features.find(f => f.id === activeFeature)?.color || 'blue'}-100`}>
-                                                        {React.createElement(features.find(f => f.id === activeFeature)?.icon || Users, { size: 20, className: "text-blue-600" })}
+                                    {/* Dynamic Content Area */}
+                                    <div className="flex-1 p-4 relative">
+                                        <AnimatePresence mode="wait">
+                                            <motion.div
+                                                key={activeFeature}
+                                                initial={{ opacity: 0, scale: 0.9 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.9 }}
+                                                className="h-full flex flex-col gap-4"
+                                            >
+                                                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-3">
+                                                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${activeFeatureData.gradient} text-white flex items-center justify-center shadow-md`}>
+                                                        <activeFeatureData.icon size={20} />
                                                     </div>
-                                                    <span className="font-bold text-slate-800">
-                                                        {features.find(f => f.id === activeFeature)?.title}
-                                                    </span>
+                                                    <div>
+                                                        <h5 className="font-black text-slate-800 text-sm">{activeFeatureData.title}</h5>
+                                                        <p className="text-slate-500 text-[9px] font-bold leading-relaxed mt-0.5">{activeFeatureData.description}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="h-24 bg-slate-100 rounded-lg animate-pulse"></div>
-                                            </div>
 
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="h-32 bg-white rounded-xl shadow-sm border border-slate-100 p-3">
-                                                    <div className="w-8 h-8 bg-blue-50 rounded-full mb-2"></div>
-                                                    <div className="h-2 w-16 bg-slate-100 rounded mb-1"></div>
-                                                    <div className="h-2 w-10 bg-slate-100 rounded"></div>
+                                                <div className="flex-1 bg-slate-100/50 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-4 text-center">
+                                                    <div className="w-8 h-8 bg-slate-200 rounded-full mb-2 flex items-center justify-center">
+                                                        <Sparkles className="text-slate-400" size={16} />
+                                                    </div>
+                                                    <p className="text-[8px] font-black uppercase tracking-widest text-slate-400 italic">Interface loading...</p>
                                                 </div>
-                                                <div className="h-32 bg-white rounded-xl shadow-sm border border-slate-100 p-3">
-                                                    <div className="w-8 h-8 bg-lime-50 rounded-full mb-2"></div>
-                                                    <div className="h-2 w-16 bg-slate-100 rounded mb-1"></div>
-                                                </div>
-                                            </div>
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    </div>
 
-                                            <div className="bg-blue-600 text-white p-4 rounded-xl mt-auto shadow-lg shadow-blue-600/20 text-center font-bold">
-                                                Action Button
-                                            </div>
-                                        </motion.div>
-                                    </AnimatePresence>
+                                    {/* Bottom Nav Bar */}
+                                    <div className="bg-white border-t border-slate-100 px-6 py-4 flex justify-between items-center">
+                                        <div className="w-2 h-2 bg-blue-600 rounded-full shadow-[0_0_8px_rgba(37,99,235,0.4)]"></div>
+                                        <div className="w-1.5 h-1.5 bg-slate-200 rounded-full"></div>
+                                        <div className="w-4 h-4 bg-slate-100 rounded-full"></div>
+                                        <div className="w-1.5 h-1.5 bg-slate-200 rounded-full"></div>
+                                    </div>
                                 </div>
-
-                                {/* Bottom Nav */}
-                                <div className="bg-white border-t p-4 pb-6 flex justify-around text-slate-400">
-                                    <div className="w-6 h-6 bg-slate-200 rounded-full"></div>
-                                    <div className="w-6 h-6 bg-blue-600 rounded-full"></div>
-                                    <div className="w-6 h-6 bg-slate-200 rounded-full"></div>
-                                </div>
-                            </div>
-                        </motion.div>
-
-                        {/* Decorative Circles behind Phone */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] border border-slate-200 rounded-full -z-10 opacity-50"></div>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] border border-slate-100 rounded-full -z-20 opacity-30"></div>
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
             </div>

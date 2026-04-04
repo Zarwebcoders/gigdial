@@ -1,207 +1,249 @@
-import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Star, ArrowRight, Sparkles, Clock, Users, Award, Zap, TrendingUp, Heart } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Star, ArrowRight, Sparkles, Clock, Users, Award, Zap, TrendingUp, Heart, X, Phone, Send, Search, RefreshCw } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { getFullImagePath } from '../../utils/imagePath';
+import axios from 'axios';
 
-const ServiceCard = ({ title, rating, image, category, price, bookings }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    whileHover={{ scale: 1.03, y: -8 }}
-    viewport={{ once: true }}
-    className="relative flex-shrink-0 w-72 bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-lg hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 group cursor-pointer"
-  >
-    {/* Premium badge for high ratings */}
-    {parseFloat(rating) >= 4.8 && (
-      <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-yellow-500 to-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
-        <Award className="w-3 h-3" />
-        <span>Premium</span>
-      </div>
-    )}
-
-    {/* Trending badge for popular services */}
-    {bookings > 100 && (
-      <div className="absolute top-4 right-4 z-20 bg-gradient-to-r from-pink-500 to-rose-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-lg">
-        <TrendingUp className="w-3 h-3" />
-        <span>Trending</span>
-      </div>
-    )}
-
-    <div className="h-48 overflow-hidden relative">
-      <img
-        src={image}
-        alt={title}
-        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-1"
-      />
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-60"></div>
-
-      {/* Category tag */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm text-white text-xs font-medium px-3 py-1 rounded-full border border-white/20">
-        {category}
-      </div>
-    </div>
-
-    {/* Content */}
-    <div className="p-5">
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="text-lg font-bold text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-1">
-          {title}
-        </h3>
-        <Heart className="w-5 h-5 text-slate-300 hover:text-rose-500 transition-colors cursor-pointer hover:scale-110" />
-      </div>
-
-      {/* Stats */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-blue-50 px-3 py-1.5 rounded-lg">
-            <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-            <span className="ml-1.5 font-bold text-slate-800">{rating}</span>
-            <span className="text-xs text-slate-500 ml-1">/ 5.0</span>
-          </div>
-
-          <div className="flex items-center text-xs text-slate-500">
-            <Users className="w-3 h-3 mr-1" />
-            <span>{bookings}+ bookings</span>
-          </div>
-        </div>
-
-        <div className="flex items-center text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded">
-          <Clock className="w-3 h-3 mr-1" />
-          <span>2h avg.</span>
-        </div>
-      </div>
-
-      {/* Price and CTA */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-        <div>
-          <div className="text-xs text-slate-500">Starting from</div>
-          <div className="text-xl font-bold text-slate-900">
-            ₹{price}
-            <span className="text-sm text-slate-500 font-normal ml-1">/session</span>
-          </div>
-        </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-md hover:shadow-lg"
-        >
-          Book Now
-        </motion.button>
-      </div>
-    </div>
-
-    {/* Hover effect border */}
-    <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-500/30 rounded-2xl transition-all duration-300 pointer-events-none"></div>
-  </motion.div>
-);
-
-const ServiceRow = ({ title, services, icon: Icon = Sparkles, color = 'blue' }) => {
-  const scrollContainer = useRef(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
-
-  const colors = {
-    blue: 'from-blue-500 to-cyan-500',
-    green: 'from-emerald-500 to-green-500',
-    purple: 'from-purple-500 to-pink-500',
-    orange: 'from-orange-500 to-amber-500',
+const ServiceCard = ({ title, rating, image, category, price, bookings, onBook, workerId, id, color = 'blue' }) => {
+  const gradients = {
+    blue: 'from-blue-600 to-indigo-600',
+    green: 'from-emerald-500 to-teal-500',
+    purple: 'from-purple-500 to-fuchsia-500',
+    orange: 'from-amber-400 to-orange-500',
     red: 'from-rose-500 to-pink-500',
     lime: 'from-lime-500 to-green-500'
   };
 
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      whileHover={{ y: -10 }}
+      viewport={{ once: true }}
+      className="relative flex-shrink-0 w-[280px] sm:w-80 group cursor-pointer h-full"
+    >
+      {/* Visible Shimmer Border effect */}
+      <div className={`absolute -inset-[1px] bg-gradient-to-r ${gradients[color]} rounded-[2rem] blur-sm opacity-25 group-hover:opacity-100 transition-opacity duration-500`}></div>
+
+      {/* Main Card Content */}
+      <div className="relative bg-white rounded-[2rem] overflow-hidden border border-slate-100 shadow-xl shadow-slate-200/50 group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
+        {/* Image Container */}
+        <div className="h-52 overflow-hidden relative shrink-0" onClick={() => onBook({ title, workerId, image, id })}>
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
+            onError={(e) => {
+              e.target.onerror = null;
+              const categoryMatch = category || 'Professional';
+              const placeholders = {
+                'Cleaning': 'https://images.unsplash.com/photo-1581578731117-104f8a3d46a8?q=80&w=600',
+                'Plumber': 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?q=80&w=600',
+                'Electrician': 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=600',
+                'Tutor': 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=600',
+                'Digital': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600'
+              };
+              e.target.src = placeholders[categoryMatch] || 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?q=80&w=600';
+            }}
+          />
+          {/* Dynamic Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/10 to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+
+          {/* Category Badge - Glassmorphism */}
+          <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/30">
+            {category}
+          </div>
+
+          {/* Floating Rating Card */}
+          <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-xl px-2.5 py-1.5 rounded-xl shadow-xl flex items-center gap-1.5 border border-white">
+            <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+            <span className="text-xs font-black text-slate-800">{rating}</span>
+          </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="p-6 flex flex-col flex-1">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-xl font-black text-slate-800 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-slate-900 group-hover:to-slate-600 transition-all line-clamp-1 flex-1 pr-2">
+              {title}
+            </h3>
+            <button className="p-2 bg-slate-50 rounded-full text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all transform hover:scale-110 active:scale-90 overflow-hidden relative">
+              <Heart className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Trust Badges */}
+          <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
+              <Users className="w-3.5 h-3.5 text-blue-500" />
+              <span>{bookings}+ hires</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
+              <Clock className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Quick response</span>
+            </div>
+          </div>
+
+          <div className="mt-auto">
+            {/* Action Button - Vibrant Gradient */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onBook({ title, workerId, image, id });
+              }}
+              className={`w-full py-4 bg-gradient-to-r ${gradients[color]} text-white text-[11px] font-black rounded-2xl shadow-lg border-t border-white/20 transition-all uppercase tracking-widest flex items-center justify-center gap-2 group/btn`}
+            >
+              <Zap className="w-4 h-4 fill-white group-hover/btn:animate-pulse" />
+              <span>Request Now</span>
+              <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover/btn:opacity-100 group-hover/btn:translate-x-0 transition-all" />
+            </motion.button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const ServiceRow = ({ title, services, icon: Icon = Sparkles, color = 'blue', onBook, onExplore, category }) => {
+  const scrollContainer = useRef(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const colors = {
+    blue: 'from-blue-600/20 to-blue-600/5 text-blue-600',
+    green: 'from-emerald-600/20 to-emerald-600/5 text-emerald-600',
+    purple: 'from-purple-600/20 to-purple-600/5 text-purple-600',
+    orange: 'from-orange-600/20 to-orange-600/5 text-orange-600',
+    red: 'from-rose-600/20 to-rose-600/5 text-rose-600',
+    lime: 'from-lime-600/20 to-lime-600/5 text-lime-600'
+  };
+
   const scroll = (direction) => {
     if (scrollContainer.current) {
-      const scrollAmount = 300;
-      scrollContainer.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
+      const { scrollLeft, clientWidth, scrollWidth } = scrollContainer.current;
+      const scrollAmount = 350; // Approximating card width + gap
+
+      let nextScroll = 0;
+      if (direction === 'right') {
+        nextScroll = scrollLeft + clientWidth >= scrollWidth - 10 ? 0 : scrollLeft + scrollAmount;
+      } else {
+        nextScroll = scrollLeft <= 0 ? scrollWidth - clientWidth : scrollLeft - scrollAmount;
+      }
+
+      scrollContainer.current.scrollTo({
+        left: nextScroll,
         behavior: 'smooth'
       });
+    }
+  };
 
-      setTimeout(() => {
-        if (scrollContainer.current) {
-          const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.current;
-          setShowLeftArrow(scrollLeft > 0);
-          setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 10);
-        }
-      }, 300);
+  // Auto-scroll logic
+  useEffect(() => {
+    if (isHovered || services.length <= 1) return;
+
+    const interval = setInterval(() => {
+      scroll('right');
+    }, 4000); // Scroll every 4 seconds
+
+    return () => clearInterval(interval);
+  }, [isHovered, services.length]);
+
+  const handleScroll = () => {
+    if (scrollContainer.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.current;
+      setShowLeftArrow(scrollLeft > 20);
+      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 20);
+
+      // Update active dot
+      const index = Math.round(scrollLeft / 344); // 320 card + 24 gap
+      setActiveIndex(index);
     }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="relative mb-16 last:mb-0"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative mb-24 last:mb-0 group/section"
     >
-      {/* Header */}
-      <div className="flex justify-between items-center mb-8 px-4 md:px-0">
-        <div className="flex items-center gap-3">
-          <div className={`p-3 rounded-xl bg-gradient-to-br ${colors[color]} bg-opacity-10`}>
-            <Icon className={`w-6 h-6 text-${color}-600`} />
+      {/* Header - More premium */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8 px-4 md:px-0">
+        <div className="flex items-center gap-4">
+          <div className={`p-3 sm:p-4 rounded-[1.2rem] sm:rounded-[1.5rem] bg-gradient-to-br ${colors[color]} border border-white shadow-xl flex items-center justify-center transform group-hover/section:scale-110 transition-all duration-500`}>
+            <Icon className="w-6 h-6 sm:w-8 sm:h-8" />
           </div>
-          <h2 className="text-2xl md:text-3xl font-bold text-slate-900">{title}</h2>
+          <div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-800 tracking-tight leading-tight">{title}</h2>
+            <p className="text-slate-500 font-bold text-[10px] sm:text-sm tracking-widest uppercase mt-0.5 sm:mt-1 opacity-70">Handpicked Professionals</p>
+          </div>
         </div>
-        <motion.a
-          href="#"
+        <motion.button
+          onClick={() => onExplore(category)}
           whileHover={{ x: 5 }}
-          className="flex items-center text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors group"
+          className="flex items-center gap-3 px-6 py-3 sm:px-5 sm:py-2.5 bg-white border border-slate-100 rounded-2xl text-blue-600 font-black text-xs uppercase tracking-widest shadow-sm hover:shadow-md hover:border-blue-100 transition-all group/btn w-fit"
         >
-          <span className="mr-2">Explore All</span>
-          <div className="p-2 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors">
-            <ArrowRight className="w-4 h-4" />
-          </div>
-        </motion.a>
+          Explore All
+          <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+        </motion.button>
       </div>
 
-      {/* Scroll arrows */}
-      {showLeftArrow && (
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+      {/* Navigation Arrows - Hidden on very small mobile */}
+      <div className="hidden sm:flex absolute top-1/2 -left-4 -right-4 justify-between pointer-events-none z-30 opacity-0 group-hover/section:opacity-100 transition-opacity translate-y-4">
+        <button
           onClick={() => scroll('left')}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-30 bg-white p-3 rounded-full shadow-lg border border-slate-200 hover:shadow-xl hover:border-blue-300 transition-all"
+          className={`p-4 bg-white/90 backdrop-blur-xl rounded-full shadow-2xl border border-slate-100 pointer-events-auto hover:bg-white hover:scale-110 active:scale-95 transition-all text-slate-800 ${!showLeftArrow ? 'opacity-30 cursor-not-allowed' : ''}`}
         >
-          <ArrowRight className="w-5 h-5 text-slate-700 rotate-180" />
-        </motion.button>
-      )}
-
-      {showRightArrow && (
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          <ArrowRight className="w-6 h-6 rotate-180" />
+        </button>
+        <button
           onClick={() => scroll('right')}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-30 bg-white p-3 rounded-full shadow-lg border border-slate-200 hover:shadow-xl hover:border-blue-300 transition-all"
+          className={`p-4 bg-white/90 backdrop-blur-xl rounded-full shadow-2xl border border-slate-100 pointer-events-auto hover:bg-white hover:scale-110 active:scale-95 transition-all text-slate-800 ${!showRightArrow ? 'opacity-30 cursor-not-allowed' : ''}`}
         >
-          <ArrowRight className="w-5 h-5 text-slate-700" />
-        </motion.button>
-      )}
+          <ArrowRight className="w-6 h-6" />
+        </button>
+      </div>
 
       {/* Services container */}
       <div
         ref={scrollContainer}
-        className="overflow-x-auto scrollbar-hide px-4 md:px-0 pb-8"
-        onScroll={() => {
-          if (scrollContainer.current) {
-            const { scrollLeft, scrollWidth, clientWidth } = scrollContainer.current;
-            setShowLeftArrow(scrollLeft > 0);
-            setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 10);
-          }
-        }}
+        onScroll={handleScroll}
+        className="overflow-x-auto scrollbar-hide px-4 md:px-0 pb-12 snap-x snap-mandatory scroll-smooth"
       >
-        <div className="flex space-x-6 w-max">
+        <div className="flex space-x-4 sm:space-x-8 w-max">
           {services.map((service, idx) => (
-            <ServiceCard key={idx} {...service} />
+            <div key={idx} className="snap-start h-full">
+              <ServiceCard {...service} onBook={onBook} color={color} />
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Progress indicator */}
-      <div className="flex justify-center gap-2 mt-4">
+      {/* Modern Progress Dots */}
+      <div className="flex justify-center gap-2 -mt-4">
         {services.map((_, idx) => (
-          <div
+          <motion.div
             key={idx}
-            className="w-2 h-2 rounded-full bg-slate-300"
+            animate={{
+              width: activeIndex === idx ? 24 : 8,
+              opacity: activeIndex === idx ? 1 : 0.4
+            }}
+            className={`h-2 rounded-full cursor-pointer transition-all ${activeIndex === idx ? 'bg-blue-600' : 'bg-slate-300 hover:bg-slate-400'}`}
+            onClick={() => {
+              scrollContainer.current.scrollTo({
+                left: idx * 344,
+                behavior: 'smooth'
+              });
+            }}
           />
         ))}
       </div>
@@ -210,225 +252,198 @@ const ServiceRow = ({ title, services, icon: Icon = Sparkles, color = 'blue' }) 
 };
 
 const ServiceShowcase = () => {
-  const serviceData = {
-    digitalServices: [
-      {
-        title: 'Web Development',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80',
-        category: 'Tech',
-        price: '4999',
-        bookings: 245
-      },
-      {
-        title: 'Graphic Design',
-        rating: '4.7',
-        image: 'https://images.unsplash.com/photo-1626785774573-4b799312c95d?auto=format&fit=crop&w=600&q=80',
-        category: 'Creative',
-        price: '2999',
-        bookings: 189
-      },
-      {
-        title: 'Video Editing',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=600&q=80',
-        category: 'Media',
-        price: '3999',
-        bookings: 312
-      },
-      {
-        title: 'Content Writing',
-        rating: '4.6',
-        image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80',
-        category: 'Writing',
-        price: '1999',
-        bookings: 167
-      },
-      {
-        title: 'SEO Optimization',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1571721795195-a2ca5d481f12?auto=format&fit=crop&w=600&q=80',
-        category: 'Marketing',
-        price: '5999',
-        bookings: 278
-      },
-    ],
+  const [data, setData] = useState({
+    digitalServices: [],
+    wellnessServices: [],
+    homeServices: [],
+    tutoringServices: [],
+    creativeServices: [],
+    beautyServices: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
 
-    wellnessServices: [
-      {
-        title: 'Personal Trainer',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=600&q=80',
-        category: 'Fitness',
-        price: '899',
-        bookings: 421
-      },
-      {
-        title: 'Yoga Instructor',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1544367563-12123d8965cd?auto=format&fit=crop&w=600&q=80',
-        category: 'Wellness',
-        price: '699',
-        bookings: 356
-      },
-      {
-        title: 'Nutritionist',
-        rating: '4.7',
-        image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=600&q=80',
-        category: 'Health',
-        price: '1299',
-        bookings: 289
-      },
-      {
-        title: 'Meditation Coach',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=600&q=80',
-        category: 'Mindfulness',
-        price: '799',
-        bookings: 198
-      },
-    ],
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedService, setSelectedService] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [sending, setSending] = useState(false);
 
-    homeServices: [
-      {
-        title: 'Home Cleaning',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1581578731117-104f8a3d46a8?auto=format&fit=crop&w=600&q=80',
-        category: 'Cleaning',
-        price: '1499',
-        bookings: 512
-      },
-      {
-        title: 'Plumbing Repair',
-        rating: '4.7',
-        image: 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=600&q=80',
-        category: 'Repair',
-        price: '999',
-        bookings: 387
-      },
-      {
-        title: 'Electrical Help',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?auto=format&fit=crop&w=600&q=80',
-        category: 'Electric',
-        price: '1299',
-        bookings: 234
-      },
-      {
-        title: 'Appliance Repair',
-        rating: '4.6',
-        image: 'https://images.unsplash.com/photo-1581092921461-eab62e97a783?auto=format&fit=crop&w=600&q=80',
-        category: 'Maintenance',
-        price: '899',
-        bookings: 176
-      },
-    ],
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-    tutoringServices: [
-      {
-        title: 'Mathematics',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80',
-        category: 'Academics',
-        price: '799',
-        bookings: 421
-      },
-      {
-        title: 'Science Tuition',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80',
-        category: 'Education',
-        price: '899',
-        bookings: 356
-      },
-      {
-        title: 'Language Learning',
-        rating: '4.7',
-        image: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=600&q=80',
-        category: 'Languages',
-        price: '699',
-        bookings: 289
-      },
-      {
-        title: 'Music Lessons',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1514320291940-236122f0d358?auto=format&fit=crop&w=600&q=80',
-        category: 'Arts',
-        price: '1299',
-        bookings: 198
-      },
-    ],
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const res = await fetch('/api/gigs');
+        const gigs = await res.json();
 
-    creativeServices: [
-      {
-        title: 'Photography',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1554048612-387768052bf7?auto=format&fit=crop&w=600&q=80',
-        category: 'Art',
-        price: '4999',
-        bookings: 156
-      },
-      {
-        title: 'Event Planning',
-        rating: '4.7',
-        image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=600&q=80',
-        category: 'Events',
-        price: '8999',
-        bookings: 89
-      },
-      {
-        title: 'Makeup Artist',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1487412947132-75c5b98f4b7b?auto=format&fit=crop&w=600&q=80',
-        category: 'Beauty',
-        price: '2999',
-        bookings: 212
-      },
-      {
-        title: 'Interior Design',
-        rating: '4.6',
-        image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80',
-        category: 'Design',
-        price: '6999',
-        bookings: 134
-      },
-    ],
+        // Categorize services based on the new registration categories
+        const categoriesMap = {
+          tradesServices: ['Trades & Services (Manual)', 'Plumbing', 'Electrician', 'Carpenter', 'Painter', 'AC Repair', 'Cleaning'],
+          marketingSales: ['Sales, Marketing & PR', 'Marketing', 'SEO', 'Sales', 'Digital Marketing'],
+          businessAdmin: ['Business, Admin & HR', 'Accounting', 'Human Resources', 'Admin', 'Financial'],
+          legalCompliance: ['Legal & Compliance', 'Legal', 'Lawyer', 'Compliance'],
+          techSoftware: ['Computers, IT & Software', 'Tech', 'Development', 'Software', 'IT', 'Cybersecurity', 'Cloud'],
+          writingContent: ['Writing, Content & Languages', 'Writing', 'Content', 'Translator', 'Blogger'],
+          designMedia: ['Design, Media & Architecture', 'Design', 'Media', 'Architecture', 'Graphic', 'Photographer'],
+          logisticsTransport: ['Logistics, Shipping & Transport', 'Logistics', 'Transport', 'Driver', 'Shipping'],
+          educationCoaching: ['Education, Teaching & Coaching', 'Education', 'Tutor', 'Teaching', 'Coaching'],
+          healthWellness: ['Health, Medical & Wellness', 'Health', 'Medical', 'Wellness', 'Yoga', 'Fitness', 'Nurse'],
+          aiTech: ['Artificial Intelligence & Future Tech', 'AI', 'Artificial Intelligence', 'Machine Learning', 'Future Tech'],
+          eventsHospitality: ['Events, Hospitality & Tourism', 'Events', 'Hospitality', 'Tourism', 'Wedding', 'Chef'],
+          othersGeneral: ['Others & General Jobs', 'Others', 'Security', 'Laborer', 'Delivery']
+        };
 
-    beautyServices: [
-      {
-        title: 'Bridal Makeup',
-        rating: '4.9',
-        image: 'https://images.unsplash.com/photo-1487412947132-75c5b98f4b7b?auto=format&fit=crop&w=600&q=80',
-        category: 'Bridal',
-        price: '8999',
-        bookings: 156
-      },
-      {
-        title: 'Hair Styling',
-        rating: '4.8',
-        image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=600&q=80',
-        category: 'Salon',
-        price: '1999',
-        bookings: 289
-      },
-      {
-        title: 'Spa & Massage',
-        rating: '4.7',
-        image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?auto=format&fit=crop&w=600&q=80',
-        category: 'Wellness',
-        price: '2999',
-        bookings: 367
-      },
-      {
-        title: 'Manicure',
-        rating: '4.6',
-        image: 'https://images.unsplash.com/photo-1632345031435-8727f6897d53?auto=format&fit=crop&w=600&q=80',
-        category: 'Nails',
-        price: '1499',
-        bookings: 412
-      },
-    ],
+        const categorizedData = {
+          tradesServices: [],
+          marketingSales: [],
+          businessAdmin: [],
+          legalCompliance: [],
+          techSoftware: [],
+          writingContent: [],
+          designMedia: [],
+          logisticsTransport: [],
+          educationCoaching: [],
+          healthWellness: [],
+          aiTech: [],
+          eventsHospitality: [],
+          othersGeneral: []
+        };
+
+        gigs.forEach(gig => {
+          // Fallback to user rating if gig doesn't have one
+          const gigRating = (gig.rating && gig.rating > 0) ? gig.rating : (gig.user?.rating || 0);
+          const gigHires = (gig.numReviews && gig.numReviews > 0) ? gig.numReviews : (gig.user?.numReviews || 0);
+
+          // Map backend fields to frontend card props
+          const mappedGig = {
+            title: gig.title,
+            rating: gigRating.toString() || '0',
+            image: getFullImagePath(gig.image || gig.coverImage) || 'https://images.unsplash.com/photo-1581578731117-104f8a3d46a8?auto=format&fit=crop&w=600&q=80',
+            category: gig.category || 'Professional',
+            price: gig.price,
+            bookings: gigHires || 0, // Using numReviews/salesCount as hiring count proxy
+            id: gig._id,
+            workerId: gig.user?._id || gig.user
+          };
+
+          // Find matching category group
+          let added = false;
+          const gigCat = (gig.mainCategory || gig.category || '').toLowerCase();
+          
+          for (const [key, keywords] of Object.entries(categoriesMap)) {
+            if (keywords.some(k => gigCat.includes(k.toLowerCase()))) {
+              categorizedData[key].push(mappedGig);
+              added = true;
+              break;
+            }
+          }
+          // Default bucket if no specific category match
+          if (!added) {
+            categorizedData.othersGeneral.push(mappedGig);
+          }
+        });
+
+        setData(categorizedData);
+      } catch (err) {
+        console.error("Failed to fetch services", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  const handleBookClick = async (service) => {
+    setSelectedService(service);
+
+    // Check auth status
+    const userInfo = localStorage.getItem('userInfo') ? JSON.parse(localStorage.getItem('userInfo')) : null;
+
+    if (!user || !userInfo) {
+      // Check for returning visitor with saved phone
+      const storedPhone = localStorage.getItem('visitorPhone');
+      if (storedPhone) {
+        // Silent Lead capture for returning visitor
+        try {
+          axios.post('/api/leads/anonymous-record', { 
+            workerId: service.workerId, 
+            phoneNumber: storedPhone 
+          });
+        } catch(e) { console.error(e); }
+
+        navigate(`/workers/${service.workerId}`, { 
+          state: { 
+            prefilledPhoneNumber: storedPhone,
+            fromLandingPage: true
+          } 
+        });
+        return;
+      }
+      
+      // For landing page services, we show the popup to capture lead
+      setModalOpen(true);
+    } else {
+      // If logged in, direct redirect to worker profile (One-click experience)
+      toast.loading("Connecting...", { duration: 1000 });
+      setTimeout(() => {
+        navigate(`/workers/${service.workerId}`, {
+          state: {
+            fromLandingPage: true,
+            autoRequest: true,
+            gigId: service.id || service._id
+          }
+        });
+      }, 500);
+    }
   };
+
+  const handleExplore = (category) => {
+    navigate(`/services?category=${encodeURIComponent(category)}`);
+  };
+
+  const handleSubmitContact = async (e) => {
+    e.preventDefault();
+    const cleanPhone = phoneNumber.replace(/\D/g, ''); // Extract only digits
+
+    if (cleanPhone.length !== 10) {
+      toast.error("Please enter a valid 10-digit mobile number");
+      return;
+    }
+
+    setSending(true);
+    try {
+      // 1. Store in local storage
+      localStorage.setItem('visitorPhone', cleanPhone);
+
+      // 2. Record lead anonymously
+      await axios.post('/api/leads/anonymous-record', {
+        workerId: selectedService.workerId,
+        phoneNumber: cleanPhone
+      });
+
+      setModalOpen(false);
+      setSending(false);
+      toast.success("Profile Unlocked!", { icon: '🚀' });
+
+      // 3. Navigate to worker profile
+      navigate(`/workers/${selectedService.workerId}`, {
+        state: {
+          prefilledPhoneNumber: cleanPhone,
+          fromLandingPage: true
+        }
+      });
+    } catch (err) {
+      console.error("Error submitting contact", err);
+      toast.error("Process failed. Please try again.");
+      setSending(false);
+    }
+  };
+
+  if (loading) return <div className="py-24 text-center">Loading services...</div>;
 
   return (
     <section className="py-24 bg-gradient-to-b from-slate-50 via-white to-slate-50 relative overflow-hidden">
@@ -449,51 +464,183 @@ const ServiceShowcase = () => {
             <span className="text-sm font-semibold text-blue-700">Handpicked Premium Services</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">
-            Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Premium Services</span>
+            Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Premium Services</span>
           </h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            Discover top-rated professionals for all your needs. Book instantly with verified reviews and transparent pricing.
+            Handpicked professionals delivering exceptional service with verified ratings and instant booking.
           </p>
         </motion.div>
 
-        {/* Service Rows */}
-        <div className="space-y-20">
-          <ServiceRow
-            title="Digital & Tech Services"
-            services={serviceData.digitalServices}
-            icon={Zap}
-            color="blue"
-          />
-          <ServiceRow
-            title="Wellness & Fitness"
-            services={serviceData.wellnessServices}
-            icon={Heart}
-            color="red"
-          />
-          <ServiceRow
-            title="Home Services"
-            services={serviceData.homeServices}
-            icon={Sparkles}
-            color="green"
-          />
-          <ServiceRow
-            title="Tutoring & Education"
-            services={serviceData.tutoringServices}
-            icon={Award}
-            color="purple"
-          />
-          <ServiceRow
-            title="Events & Creative Services"
-            services={serviceData.creativeServices}
-            icon={TrendingUp}
-            color="orange"
-          />
-          <ServiceRow
-            title="Beauty & Personal Care"
-            services={serviceData.beautyServices}
-            icon={Star}
-            color="lime"
-          />
+        {/* Bada Search & Selection Row */}
+        <div className="mb-16 max-w-5xl mx-auto px-4">
+          <div className="flex flex-col lg:flex-row items-stretch gap-6">
+            {/* Compact Search Bar with Black Border */}
+            <div className="flex-[2] relative group">
+              <div className="absolute inset-0 bg-slate-900/5 rounded-[2.5rem] blur-2xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-700"></div>
+              <div className="relative flex items-center bg-white border-2 border-slate-900 rounded-[2.5rem] p-1 shadow-lg shadow-slate-200/40 focus-within:ring-4 focus-within:ring-slate-900/5 transition-all duration-500">
+                <div className="pl-6 pr-2">
+                  <Search className="w-5 h-5 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Find the best professional..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1 bg-transparent py-3.5 text-slate-900 placeholder:text-slate-300 font-extrabold outline-none text-base pr-4"
+                />
+              </div>
+            </div>
+
+            {/* Compact Dropdown Button with Black Border */}
+            <div className="flex-1 relative group/dropdown min-w-[240px]">
+              <div className="relative h-full">
+                <select
+                  value={activeCategory}
+                  onChange={(e) => setActiveCategory(e.target.value)}
+                  className="w-full h-full appearance-none bg-white border-2 border-slate-900 rounded-[2.5rem] px-8 py-3.5 font-black text-xs uppercase tracking-[0.12em] text-slate-800 outline-none focus:ring-4 focus:ring-slate-900/5 cursor-pointer shadow-md transition-all pr-12"
+                >
+                  <option value="all">🔍 All Services</option>
+                  <option value="tradesServices">🛠️ Trades & Manual</option>
+                  <option value="healthWellness">🏃 Fitness & Wellness</option>
+                  <option value="techSoftware">💻 IT & Software</option>
+                  <option value="designMedia">🎨 Design & Media</option>
+                  <option value="eventsHospitality">📷 Events & Beauty</option>
+                  <option value="educationCoaching">🎓 Tutors & Coaching</option>
+                  <option value="marketingSales">📈 Marketing & Sales</option>
+                  <option value="logisticsTransport">🚛 Logistics & Driving</option>
+                  <option value="businessAdmin">💼 Business & HR</option>
+                  <option value="legalCompliance">⚖️ Legal & Law</option>
+                  <option value="writingContent">Writing & Content</option>
+                  <option value="aiTech">🤖 AI & Future Tech</option>
+                  <option value="othersGeneral">⚙️ Others & General</option>
+                </select>
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-slate-900">
+                  <ArrowRight className="w-4 h-4 rotate-90" strokeWidth={4} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Service Area */}
+        <div className="min-h-[400px] relative">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeCategory + searchTerm}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
+            >
+              {(() => {
+                let servicesToShow = [];
+                let title = "";
+                let icon = Sparkles;
+                let color = "blue";
+                let category = "All";
+
+                const applySearch = (list) => {
+                  if (!searchTerm.trim()) return list;
+                  const term = searchTerm.toLowerCase().trim();
+                  return list.filter(s =>
+                    s.title.toLowerCase().includes(term) ||
+                    (s.category && s.category.toLowerCase().includes(term)) ||
+                    (s.mainCategory && s.mainCategory.toLowerCase().includes(term)) ||
+                    (s.serviceDescription && s.serviceDescription.toLowerCase().includes(term))
+                  );
+                };
+
+                if (activeCategory === 'all') {
+                  const combined = Object.values(data).flat();
+                  // Remove duplicates if any (by id)
+                  const unique = Array.from(new Map(combined.map(s => [s.id, s])).values());
+                  servicesToShow = applySearch(unique);
+                  title = "Best Recommended Services";
+                  icon = Sparkles;
+                  color = "blue";
+                  category = "All Professionals";
+                } else if (activeCategory === 'tradesServices') {
+                  servicesToShow = applySearch(data.tradesServices);
+                  title = "Trades & Manual Services";
+                  icon = Zap;
+                  color = "blue";
+                  category = "Trades";
+                } else if (activeCategory === 'techSoftware') {
+                  servicesToShow = applySearch(data.techSoftware);
+                  title = "Computers & IT Support";
+                  icon = Send;
+                  color = "blue";
+                  category = "Tech";
+                } else if (activeCategory === 'healthWellness') {
+                  servicesToShow = applySearch(data.healthWellness);
+                  title = "Health & Wellness";
+                  icon = Heart;
+                  color = "red";
+                  category = "Wellness";
+                } else if (activeCategory === 'marketingSales') {
+                  servicesToShow = applySearch(data.marketingSales);
+                  title = "Marketing & Sales";
+                  icon = Users;
+                  color = "green";
+                  category = "Marketing";
+                } else if (activeCategory === 'designMedia') {
+                  servicesToShow = applySearch(data.designMedia);
+                  title = "Design & Creative Media";
+                  icon = Star;
+                  color = "purple";
+                  category = "Design";
+                } else if (activeCategory === 'educationCoaching') {
+                  servicesToShow = applySearch(data.educationCoaching);
+                  title = "Education & Tutoring";
+                  icon = Award;
+                  color = "orange";
+                  category = "Tutor";
+                } else if (activeCategory === 'eventsHospitality') {
+                  servicesToShow = applySearch(data.eventsHospitality);
+                  title = "Events & Hospitality";
+                  icon = TrendingUp;
+                  color = "lime";
+                  category = "Events";
+                } else if (activeCategory === 'aiTech') {
+                  servicesToShow = applySearch(data.aiTech);
+                  title = "AI & Future Technology";
+                  icon = Zap;
+                  color = "blue";
+                  category = "AI Expert";
+                } else if (activeCategory === 'logisticsTransport') {
+                  servicesToShow = applySearch(data.logisticsTransport);
+                  title = "Logistics & Transport";
+                  icon = Clock;
+                  color = "green";
+                  category = "Logistics";
+                }
+
+                if (servicesToShow.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                      <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                        <Search className="w-10 h-10 text-slate-300" />
+                      </div>
+                      <h3 className="text-xl font-bold text-slate-800">No services found</h3>
+                      <p className="text-slate-500 mt-2">Try searching for something else or browse another category.</p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <ServiceRow
+                    title={title}
+                    services={servicesToShow}
+                    icon={icon}
+                    color={color}
+                    onBook={handleBookClick}
+                    onExplore={handleExplore}
+                    category={category}
+                  />
+                );
+              })()}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* CTA Section */}
@@ -516,6 +663,87 @@ const ServiceShowcase = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Premium Light-Theme Contact Modal */}
+      <AnimatePresence>
+        {modalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/40 backdrop-blur-xl">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="relative p-[2px] rounded-[3rem] bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 shadow-2xl"
+            >
+              <div className="bg-white rounded-[2.95rem] w-full max-w-md p-10 relative overflow-hidden">
+                {/* Micro-animations Background */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50"></div>
+                <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 opacity-50"></div>
+
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="absolute top-6 right-6 p-2.5 bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-all z-10"
+                >
+                  <X size={20} />
+                </button>
+
+                <div className="text-center mb-10 relative z-10">
+                  <motion.div
+                    initial={{ rotate: -15 }}
+                    animate={{ rotate: 0 }}
+                    className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-200"
+                  >
+                    <Phone className="text-white w-10 h-10" />
+                  </motion.div>
+                  <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-none mb-4">CONNECT WITH PRO</h3>
+                  <p className="text-slate-500 font-medium text-base px-2">Enter your 10-digit number to unlock early access and professional services.</p>
+                </div>
+
+                <form onSubmit={handleSubmitContact} className="space-y-8 relative z-10">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Mobile Number</label>
+                    <div className="relative group">
+                      <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">
+                        <span className="text-lg font-black text-slate-300 tracking-tighter group-focus-within:text-blue-600 transition-colors">+91</span>
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="98765 43210"
+                        className="w-full pl-16 pr-8 py-5 rounded-2xl bg-slate-50 border-2 border-slate-50 focus:bg-white focus:border-blue-500 focus:ring-8 focus:ring-blue-500/5 outline-none transition-all font-black text-slate-900 tracking-[0.15em] text-lg lg:text-xl shadow-inner"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ''))}
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={sending}
+                    className="w-full py-5 bg-slate-950 hover:bg-blue-600 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-4 shadow-xl active:scale-[0.98] uppercase text-sm tracking-[0.2em] group overflow-hidden relative"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
+                    {sending ? (
+                      <span className="flex items-center gap-2">
+                        <RefreshCw className="animate-spin" size={18} /> INITIALIZING...
+                      </span>
+                    ) : (
+                      <>
+                        <Send size={18} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" /> VIEW PROFILE NOW
+                      </>
+                    )}
+                  </button>
+                  <div className="flex items-center justify-center gap-6 mt-8 opacity-40 grayscale group-hover:grayscale-0 transition-all">
+                    <div className="h-[1px] flex-1 bg-slate-200"></div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Verified & Secure</p>
+                    <div className="h-[1px] flex-1 bg-slate-200"></div>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

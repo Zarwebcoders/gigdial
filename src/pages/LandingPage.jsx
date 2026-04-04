@@ -1,14 +1,20 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
+
 import Hero from '../components/LandingPage/Hero';
 import Stats from '../components/LandingPage/Stats';
-import Categories from '../components/LandingPage/Categories';
 import ServiceShowcase from '../components/LandingPage/ServiceShowcase';
+import BrowseWorkersMinimal from '../components/LandingPage/BrowseWorkersMinimal';
+import Testimonials from '../components/LandingPage/Testimonials';
 import Features from '../components/LandingPage/Features';
 import HowItWorks from '../components/LandingPage/HowItWorks';
 import Pricing from '../components/LandingPage/Pricing';
 import LiveDemoSection from '../components/LandingPage/LiveDemoSection';
 import AppShowcase from '../components/LandingPage/AppShowcase';
-import { motion } from 'framer-motion';
+import BlogSection from '../components/LandingPage/BlogSection';
+import SEO from '../components/Shared/SEO';
 
 // Page transition variants
 const pageVariants = {
@@ -18,6 +24,17 @@ const pageVariants = {
 };
 
 const LandingPage = () => {
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (user) {
+            if (user.role === 'worker') navigate('/worker-dashboard', { replace: true });
+            else if (user.role === 'customer') navigate('/customer-dashboard', { replace: true });
+            else if (user.role === 'admin') navigate('/admin', { replace: true });
+        }
+    }, [user, navigate]);
+
     return (
         <motion.div
             className="landing-page-wrapper bg-white"
@@ -26,6 +43,7 @@ const LandingPage = () => {
             animate="animate"
             exit="exit"
         >
+            <SEO title="Home" description="Connect with verified local professionals for all your service needs. Reliable, fast, and secure." />
             {/* Hero Section with integrated animations */}
             <Hero />
 
@@ -35,9 +53,9 @@ const LandingPage = () => {
             {/* Live Demo Section - New Addition */}
             <LiveDemoSection />
 
-            {/* Main Service Categories */}
-            <div id="categories">
-                <Categories />
+            {/* Detailed Service Showcase - Now at the Top */}
+            <div id="services">
+                <ServiceShowcase />
             </div>
 
             {/* Features & Value Props */}
@@ -45,13 +63,21 @@ const LandingPage = () => {
                 <Features />
             </div>
 
-            {/* App Showcase - New Addition */}
+            {/* App Showcase - Mobile Experience */}
             <AppShowcase />
 
-            {/* Detailed Service Showcase */}
-            <div id="services">
-                <ServiceShowcase />
+            {/* Top Workers Listing - Replaces Categories Section */}
+            <div id="workers-grid">
+                <BrowseWorkersMinimal />
             </div>
+
+            {/* User Testimonials Section */}
+            <div id="testimonials">
+                <Testimonials />
+            </div>
+
+            {/* Blog Section & Knowledge Hub */}
+            <BlogSection />
 
             {/* How It Works Section */}
             <HowItWorks />

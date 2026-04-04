@@ -1,5 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Car, Wrench, Zap, Home, GraduationCap, Dumbbell, Heart, Laptop, ChevronRight, Sparkles, Star, Users, Clock } from 'lucide-react';
 
@@ -112,7 +114,13 @@ const cardVariants = {
 };
 
 const Categories = () => {
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const [hoveredIndex, setHoveredIndex] = useState(null);
+
+  const handleCategoryClick = (categoryName) => {
+    navigate(`/services?category=${encodeURIComponent(categoryName)}`);
+  };
 
   return (
     <section className="py-24 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
@@ -154,7 +162,7 @@ const Categories = () => {
         </div>
 
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6"
           variants={container}
           initial="hidden"
           whileInView="show"
@@ -167,12 +175,13 @@ const Categories = () => {
               whileHover="hover"
               onMouseEnter={() => setHoveredIndex(idx)}
               onMouseLeave={() => setHoveredIndex(null)}
-              className="relative group"
+              onClick={() => handleCategoryClick(cat.name)}
+              className="relative group cursor-pointer"
             >
               {/* Glow effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-lime-500/10 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
-              <div className="relative p-6 rounded-3xl bg-white border border-slate-200 group-hover:border-lime-500/30 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-lime-500/5 overflow-hidden cursor-pointer">
+              <div className="relative p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white border border-slate-200 group-hover:border-lime-500/30 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-lime-500/5 overflow-hidden cursor-pointer h-full flex flex-col">
 
                 {/* Animated background pattern */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -188,33 +197,43 @@ const Categories = () => {
 
                 {/* Icon container with animated gradient */}
                 <motion.div
-                  className={`relative w-16 h-16 rounded-2xl ${cat.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 overflow-hidden`}
+                  className={`relative w-10 h-10 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl ${cat.bg} flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300 overflow-hidden shrink-0`}
                   whileHover={{ rotate: 5 }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent"></div>
-                  <cat.icon className={`w-8 h-8 ${cat.color} relative z-10`} />
+                  <cat.icon className={`w-5 h-5 sm:w-8 sm:h-8 ${cat.color} relative z-10`} />
                 </motion.div>
 
                 {/* Category name */}
-                <h3 className="text-xl font-bold text-slate-800 mb-2 relative">
+                <h3 className="text-sm sm:text-xl font-bold text-slate-800 mb-1 sm:mb-2 relative line-clamp-1">
                   {cat.name}
-                  <ChevronRight className="w-5 h-5 text-lime-600 absolute right-0 top-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                  <ChevronRight className="hidden sm:block w-5 h-5 text-lime-600 absolute right-0 top-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
                 </h3>
 
                 {/* Tagline */}
-                <p className="text-sm text-slate-500 mb-4 font-medium">{cat.tagline}</p>
+                <p className="text-[10px] sm:text-sm text-slate-500 mb-3 sm:mb-4 font-medium line-clamp-1 sm:line-clamp-none">{cat.tagline}</p>
 
                 {/* Stats */}
-                <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm font-medium text-slate-700">{cat.count} Experts</span>
+                <div className="flex items-center justify-between border-t border-slate-100 pt-3 sm:pt-4 mt-auto">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <Users className="w-3 h-3 sm:w-4 sm:h-4 text-slate-400" />
+                    <span className="text-[10px] sm:text-sm font-medium text-slate-700">{cat.count}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4 text-slate-400" />
-                    <span className="text-sm text-slate-600">24/7</span>
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-slate-400" />
+                    <span className="text-[10px] sm:text-sm text-slate-600">24/7</span>
                   </div>
                 </div>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCategoryClick(cat.name);
+                  }}
+                  className="hidden sm:flex w-full py-2.5 rounded-xl bg-slate-50 text-slate-600 font-bold text-sm group-hover:bg-slate-900 group-hover:text-white transition-all duration-300 items-center justify-center gap-2 mt-4"
+                >
+                  {t('viewWorkers')} <ChevronRight size={16} />
+                </button>
 
                 {/* Hover indicator */}
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 group-hover:w-24 h-1 bg-gradient-to-r from-blue-500 to-lime-500 rounded-full transition-all duration-300"></div>
@@ -236,13 +255,26 @@ const Categories = () => {
               <h3 className="text-2xl font-bold text-slate-800 mb-2">Can't find what you need?</h3>
               <p className="text-slate-600">We have 50+ more categories waiting for you</p>
             </div>
-            <button className="group relative px-8 py-3 bg-gradient-to-r from-blue-600 to-lime-600 text-white font-semibold rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-lime-500/30">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-lime-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <span className="relative flex items-center gap-2">
-                Explore All Categories
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </button>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => navigate('/services?type=Residency')}
+                className="group relative px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/30">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-blue-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span className="relative flex items-center gap-2 text-sm">
+                  Residency Catalog
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </button>
+              <button
+                onClick={() => navigate('/services?type=Commercial')}
+                className="group relative px-8 py-3 bg-gradient-to-r from-emerald-600 to-lime-600 text-white font-semibold rounded-2xl overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-lime-500/30">
+                <div className="absolute inset-0 bg-gradient-to-r from-emerald-700 to-lime-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <span className="relative flex items-center gap-2 text-sm">
+                  Commercial Catalog
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </button>
+            </div>
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-8 text-slate-500">

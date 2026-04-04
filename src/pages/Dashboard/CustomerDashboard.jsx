@@ -1,41 +1,32 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from '../../layouts/DashboardLayout';
-import CustomerOverview from '../../components/Dashboard/CustomerOverview';
-import BookingTable from '../../components/Dashboard/BookingTable';
-import ServicesCatalog from '../../components/Dashboard/ServicesCatalog';
-import ServiceHistory from '../../components/Dashboard/ServiceHistory';
-import CustomerSubscriptions from '../../components/Dashboard/CustomerSubscriptions';
-import CustomerMessages from '../../components/Dashboard/CustomerMessages';
-import FavoriteWorkers from '../../components/Dashboard/FavoriteWorkers';
-import Wallet from '../../components/Dashboard/Wallet';
-import SavedAddresses from '../../components/Dashboard/SavedAddresses';
-import Referral from '../../components/Dashboard/Referral';
-import Loyalty from '../../components/Dashboard/Loyalty';
-import CustomerSettings from '../../components/Dashboard/CustomerSettings';
 
-import UserProfile from '../../pages/Profile/UserProfile';
-
-
+// Import all customer pages
+import CustomerHome from './Customer/CustomerHome';
+import SavedAddresses from './Customer/SavedAddresses';
+import Favourites from './Customer/Favourites';
+import ServiceHistory from './Customer/ServiceHistory';
+import ReferAndEarn from './Customer/ReferAndEarn';
+import BrowseServices from './Customer/BrowseServices';
+import BrowseWorkers from './Customer/BrowseWorkers';
+import CustomerMessages from './Customer/CustomerMessages';
+import CustomerProfile from './Customer/CustomerProfile';
 
 const CustomerDashboard = () => {
     return (
         <DashboardLayout role="customer">
             <Routes>
-                <Route index element={<CustomerOverview />} />
-                <Route path="services" element={<ServicesCatalog />} />
-                <Route path="requests" element={<BookingTable />} />
-                <Route path="history" element={<ServiceHistory />} />
-                <Route path="subscriptions" element={<CustomerSubscriptions />} />
+                <Route index element={<CustomerHome />} />
+                <Route path="browse-services" element={<BrowseServices />} />
+                <Route path="browse-workers" element={<BrowseWorkers />} />
+                <Route path="service-history" element={<ServiceHistory />} />
+                <Route path="favourites" element={<Favourites />} />
                 <Route path="messages" element={<CustomerMessages />} />
-                <Route path="favorites" element={<FavoriteWorkers />} />
-                <Route path="wallet" element={<Wallet />} />
                 <Route path="addresses" element={<SavedAddresses />} />
-                <Route path="referral" element={<Referral />} />
-                <Route path="loyalty" element={<Loyalty />} />
-                <Route path="profile" element={<UserProfile role="customer" />} />
-                <Route path="settings" element={<CustomerSettings />} />
-                <Route path="*" element={<Navigate to="" replace />} />
+                <Route path="profile" element={<CustomerProfile />} />
+                <Route path="refer-earn" element={<ReferAndEarn />} />
+                <Route path="*" element={<Navigate to="/customer-dashboard" replace />} />
             </Routes>
         </DashboardLayout>
     );
