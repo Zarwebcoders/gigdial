@@ -111,9 +111,11 @@ const Footer = () => {
                 {/* Bottom Bar */}
                 <div className="pt-8 border-t border-slate-800/50 flex flex-col items-center gap-6 text-[10px] sm:text-xs font-semibold text-slate-400">
                     <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
+                        <Link to="/about" className="hover:text-white transition-colors">About Us</Link>
+                        <Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link>
                         <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-                        <Link to="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link>
+                        <Link to="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
+                        <Link to="/refund-policy" className="hover:text-white transition-colors">Refund & Cancellation Policy</Link>
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">

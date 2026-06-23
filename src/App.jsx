@@ -25,6 +25,9 @@ const BrowseWorkers = React.lazy(() => import('./pages/BrowseWorkers'));
 const WorkerPublicProfile = React.lazy(() => import('./pages/WorkerPublicProfile'));
 const Contact = React.lazy(() => import('./pages/Contact'));
 const About = React.lazy(() => import('./pages/About'));
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const TermsConditions = React.lazy(() => import('./pages/TermsConditions'));
+const RefundPolicy = React.lazy(() => import('./pages/RefundPolicy'));
 const HowItWorks = React.lazy(() => import('./pages/HowItWorks'));
 const RequireWorker = React.lazy(() => import('./pages/RequireWorker'));
 const BlogList = React.lazy(() => import('./pages/Blog/BlogList'));
@@ -67,6 +70,9 @@ function AnimatedRoutes() {
               <Route path="/workers/:id" element={<WorkerPublicProfile />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/about" element={<About />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsConditions />} />
+              <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="/blog" element={<BlogList />} />
               <Route path="/blog/:id" element={<BlogPost />} />
             </Route>
